@@ -1,44 +1,40 @@
-body{
-    width: 100vh;
-}
-
 table{
     border-collapse: collapse;
-    width: auto;
-    overflow-x: auto;
 }
 
-th,
-td {
+th,td{
     min-width: 80px;
-    border: 1px solid #333;   
+    /* width is increasing with extra content */
+    border: 1px solid #333;
 }
 
-tr{
-    line-height: 20px;
-}
-
-td:focus {
+td{
     outline: none;
-    /* add your own color */
+}
+
+#current-cell{
+    display: inline-block;
+}
+
+.table-top-cont{
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+#bold-btn{
+    font-weight: bold;
 }
 
 #italics-btn{
     font-style: italic;
 }
 
-#bold-btn{
-    font-weight: 900;
-}
-
 #underline-btn{
-    font-weight: 900;
     text-decoration: underline;
 }
 
-
-/* try line-height */
-/* try max-height */
-/* try height */
-
-/* which one works */
+#button-container{
+    display: flex;
+    gap: 5px;
+}

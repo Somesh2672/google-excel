@@ -4,69 +4,71 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Google sheet clone</title>
+    <title>Excel Clone</title>
     <link rel="stylesheet" href="style.css">
 </head>
 
 <body>
-    <button id="bold-btn">B</button>
-    <button id="italics-btn">I</button>
-    <button id="underline-btn">U</button>
-    <button id="left-align">left</button>
-    <button id="center-align">center</button>
-    <button id="right-align">right</button>
-    <select id="font-size">
-        <option value="14px">14</option>
-        <option value="16px">16</option>
-        <option value="18px">18</option>
-        <option value="20px">20</option>
-        <option value="22px">22</option>
-    </select>
-    <select id="font-style">
-        <option value="serif">Serif</option>
-        <option value="sans-serif">Sans Serif</option>
-        <option value="cursive">Cursive</option>
-        <option value="monospace">Monospace</option>
-    </select>
-    <br/>
-    <br/>
-    <button id="cut-button">Cut</button>
-    <button id="copy-button">Copy</button>
-    <button id="paste-button">Paste</button>
-    <br/>
-    <br/>
-    <!-- bgColor -->
-    <label for="bgColor">Bg Color</label>
-    <input type="color" id="bgColor"/>
+    <div class="table-top-cont">
+        <h1 id="current-cell">No cell seleted</h1>
+        <button id="bold-btn">B</button>
+        <button id="italics-btn">I</button>
+        <button id="underline-btn">U</button>
+        <button id="left-btn">Left</button>
+        <button id="center-btn">Center</button>
+        <button id="right-btn">Right</button>
+        <select id="fonte-style-dropdown">
+            <option value="serif">Serif</option>
+            <option value="sans-serif">Sans Serif</option>
+            <option value="monospace">Monospace</option>
+            <option value="cursive">Cursive</option>
+        </select>
+        <select id="fonte-size-dropdown">
+            <option value="10px">10</option>
+            <option value="12px">12</option>
+            <option value="14px">14</option>
+            <option value="16px">16</option>
+            <option value="18px">18</option>
+        </select>
+    </div>
+    <div class="table-top-cont">
+        <label for="bgColor">bg color</label>
+        <input type="color" id="bgColor" />
 
-    <!-- textColor -->
-    <label for="textColor">text Color</label>
-    <input type="color" id="textColor"/>
+        <label for="fontColor">font color</label>
+        <input type="color" id="fontColor" />
 
-    <br/>
-    <br/>
-    <button onclick="downloadJson()">Download</button>
-    <input type="file" id="jsonFile" accept=".json"/>
-    <br/>
-    <br/>
-    <button id="add-sheet-button">Add sheet</button>
+        <button id="cut-btn">Cut</button>
+        <button id="copy-btn">Copy</button>
+        <button id="paste-btn">Paste</button>
+
+        <button onclick="dowloadMatrix()">Download</button>
+        <input id="upload-input" type="file" accept=".json" />
+    </div>
     <h1 id="sheet-no">Sheet No - 1</h1>
+    <div>
+        <button id="save-sheet-btn">Save</button>
+        <button id="add-sheet-btn">Add Sheet</button>
+    </div>
+    <br>
     <div id="button-container">
         <button id="sheet-1" onclick="viewSheet(event)">Sheet 1</button>
     </div>
-    <br/>
-    <br/>
+    <br>
     <table id="my-table">
         <thead>
             <tr id="table-heading-row">
-                <th id="current-cell">No cell</th>
+                <th></th>
+                <!-- <th>A</th>
+                <th>B</th>
+                <th>C</th>
+                <th>D</th> -->
+                <!-- adding THs using loop -->
             </tr>
         </thead>
         <tbody id="table-body">
             <!-- <tr>
                 <th>1</th>
-                how many td? ->26
-                <td></td>
                 <td></td>
                 <td></td>
             </tr>
@@ -74,7 +76,9 @@
                 <th>2</th>
                 <td></td>
                 <td></td>
-                <td></td>
+            </tr>
+            <tr>
+                <th>3</th>
             </tr> -->
         </tbody>
     </table>
@@ -82,12 +86,3 @@
 </body>
 
 </html>
-
-<!--matrix -> currentSheet  -->
-
-<!-- matrix was holding sheet 1 -->
-
-<!-- make cleanup function for table because we are 
-using it 3 times -->
-
-

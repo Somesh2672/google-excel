@@ -1,422 +1,467 @@
+// excel dimensions and constants
+const rows=100;
+const columns = 26;
+const transparentBlue='#ddddff';
+const transparent='transparent';
+const arrMatrix='arrMatrix';
+
+// excel components
 const tHeadRow = document.getElementById('table-heading-row');
 const tBody = document.getElementById('table-body');
-const boldButton = document.getElementById('bold-btn');
-const italicsButton = document.getElementById('italics-btn');
-const underlineButton = document.getElementById('underline-btn');
-const leftAlign = document.getElementById('left-align');
-const centerAlign = document.getElementById('center-align');
-const rightAlign = document.getElementById('right-align');
-const fontSizeDropDown = document.getElementById('font-size');
-const fontStyleDropDown = document.getElementById('font-style');
-const bgColorInput = document.getElementById('bgColor');
-const textColorInput = document.getElementById('textColor');
-const cutButton = document.getElementById('cut-button');
-const copyButton = document.getElementById('copy-button');
-const pasteButton = document.getElementById('paste-button');
-const uploadJsonFile = document.getElementById('jsonFile');
-const addSheetButton = document.getElementById('add-sheet-button');
-const buttonContainer = document.getElementById('button-container');
+const currentCellHeading=document.getElementById('current-cell');
+// <h1 id="sheet-no">Sheet No - 1</h1>
 const sheetNo = document.getElementById('sheet-no');
-const arrMatrix = 'arrMatrix';
+const buttonContainer = document.getElementById('button-container');
 
-let cutCell = {};
-let numSheets = 1;
-let currSheetNum = 1;
+// excel Buttons
+const boldBtn = document.getElementById('bold-btn');
+const italicsBtn = document.getElementById('italics-btn');
+const underlineBtn = document.getElementById('underline-btn');
+const leftBtn = document.getElementById('left-btn');
+const centerBtn = document.getElementById('center-btn');
+const rightBtn = document.getElementById('right-btn');
+const cutBtn = document.getElementById('cut-btn');
+const copyBtn = document.getElementById('copy-btn');
+const pasteBtn = document.getElementById('paste-btn');
+const uploadInput = document.getElementById('upload-input');
+const addSheetButton=document.getElementById('add-sheet-btn');
+// DIY
+const saveSheetButton = document.getElementById('save-sheet-btn');
 
+// color inputs
+const bgColorSelector=document.getElementById('bgColor');
+const fontColorSelector=document.getElementById('fontColor');
+
+// excel dropdowns
+const fontFamilyDropdown = document.getElementById('fonte-style-dropdown');
+const fontSizeDropdown = document.getElementById('fonte-size-dropdown');
+
+// variables to save cache
+let prevCellId;
 let currentCell;
-const columns = 26;
-const rows = 100;
-
-// `arrMatrix` - [matrix1,matrix2,matrix3]
-
-addSheetButton.addEventListener('click', () => {
-    const btn = document.createElement('button');
-    numSheets++;
-    currSheetNum = numSheets;
-    btn.innerText = `Sheet ${numSheets}`;
-    btn.setAttribute('id', `sheet-${currSheetNum}`);
-    btn.setAttribute('onclick', 'viewSheet(event)');
-    buttonContainer.append(btn);
-    if (localStorage.getItem(arrMatrix)) {
-        var oldMatrixArr = localStorage.getItem(arrMatrix);
-        // oldMatrixArr -> string
-        var newMatrixArr = [...JSON.parse(oldMatrixArr), matrix];
-        localStorage.setItem(arrMatrix, JSON.stringify(newMatrixArr));
-    } else {
-        let tempMatrixArr = [matrix];
-        localStorage.setItem(arrMatrix, JSON.stringify(tempMatrixArr));
+let cutCell;
+let lastPressedBtn;
+let numSheets = 1;
+let currentSheet = 1;
+let prevSheet;
+let matrix = new Array(rows);
+createNewMatrix();
+// 
+// button creation of firstRender
+if(localStorage.getItem(arrMatrix)){
+    for (let i = 1; i < JSON.parse(localStorage.getItem(arrMatrix)).length; i++) {
+        genNextButtonFn(true);
     }
+}
 
-    // cleanup my virtual memory
+//
+function createNewMatrix() {
     for (let row = 0; row < rows; row++) {
         matrix[row] = new Array(columns);
         for (let col = 0; col < columns; col++) {
             matrix[row][col] = {};
         }
     }
-    sheetNo.innerText = "Sheet No - " + currSheetNum;
-    tBody.innerHTML = ``;
-    // repeated Code please make function (DIY)
-    for (let row = 1; row <= rows; row++) { // Row -> 1-100
-        // i create a tr
-        let tr = document.createElement('tr');
-        // number cell
-        let th = document.createElement('th');
-        // injecting number in th
-        th.innerText = row;
-        tr.append(th);
-        for (let col = 0; col < columns; col++) { //COL-> 0->26 // A->Z
-            let td = document.createElement('td');
-            td.setAttribute('contenteditable', 'true');
-            // unique row and unique col
-            // ColRow
-            td.setAttribute('id', `${String.fromCharCode(col + 65)}${row}`);
-            // this event will revolve around input
-            td.addEventListener('input', (event) => onInputFn(event));
+}
 
-            // this event revolves around focus on a cell
-            td.addEventListener('focus', (event) => onFocusFn(event));
-            tr.append(td);
+function colGen(typeOfCell, tableRow, isInnerText, rowNumber) {
+    for (let col = 0; col < columns; col++) {
+        const cell = document.createElement(typeOfCell);
+        if(isInnerText){
+            cell.innerText = String.fromCharCode(col + 65);
+            cell.setAttribute('id',String.fromCharCode(col + 65));
         }
-        tBody.append(tr);
-    }
-
-})
-
-
-
-for (let col = 0; col < columns; col++) {
-    let th = document.createElement('th');
-    // col -> 0 
-    th.innerText = String.fromCharCode(col + 65);
-    tHeadRow.append(th);
-}
-
-for (let row = 1; row <= rows; row++) { // Row -> 1-100
-    // i create a tr
-    let tr = document.createElement('tr');
-    // number cell
-    let th = document.createElement('th');
-    // injecting number in th
-    th.innerText = row;
-    tr.append(th);
-    for (let col = 0; col < columns; col++) { //COL-> 0->26 // A->Z
-        let td = document.createElement('td');
-        td.setAttribute('contenteditable', 'true');
-        // unique row and unique col
-        // ColRow
-        td.setAttribute('id', `${String.fromCharCode(col + 65)}${row}`);
-        // this event will revolve around input
-        td.addEventListener('input', (event) => onInputFn(event));
-
-        // this event revolves around focus on a cell
-        td.addEventListener('focus', (event) => onFocusFn(event));
-        tr.append(td);
-    }
-    tBody.append(tr);
-}
-
-// forming of outer array
-let matrix = new Array(rows);
-// let matrix=[];
-for (let row = 0; row < rows; row++) {
-    matrix[row] = new Array(columns);
-    for (col = 0; col < columns; col++) {
-        matrix[row][col] = {};
+        else{
+            // cell.setAttribute('id','testing set ')
+            cell.setAttribute('id',`${String.fromCharCode(col + 65)}${rowNumber}`);
+            cell.setAttribute('contenteditable','true');
+            cell.addEventListener('focusout', updateObjectInMatrix);
+            // key and value
+            cell.addEventListener('focus', event => onFocusFunction(event.target));
+        }
+        tableRow.append(cell);
     }
 }
 
-function onInputFn(event) {
-    updateMatrix(event.target);
-    // console.log(event.target);
-    // id
-    // cell content -> innerText
-    // cell style -> cssText
+function setCellColor(colId,rowId,color){
+    const colHead = document.getElementById(colId);
+    const rowHead= document.getElementById(rowId);
+    colHead.style.backgroundColor=color;
+    rowHead.style.backgroundColor=color;
 }
 
-function updateMatrix(currentCell) {
-    let tempObj = {
-        style: currentCell.style.cssText,
-        text: currentCell.innerText,
-        id: currentCell.id,
+function buttonHighlter(currentCell, button, style, styleProperty) {
+    if(currentCell.style[styleProperty]===style){
+        button.style.backgroundColor=transparentBlue;
     }
-    // A1, A2, B6
-    // `${j}${i}`
-    let j = currentCell.id[0].charCodeAt(0) - 65; /// this is col
-    // currentCell.id[0] -> this will give me character
-    // str.chatCodeAt(i) will give me respective ascii at ith index of string str
-    // -65 for making ascii code to 0th index
-    let i = currentCell.id.substr(1) - 1;
-    matrix[i][j] = tempObj;
-    // console.log(matrix);
-}
-
-function onFocusFn(event) {
-    currentCell = event.target;
-    document.getElementById('current-cell').innerText = currentCell.id;
-    if (currentCell.style.fontWeight === 'bold') {
-        boldButton.style.backgroundColor = 'yellow';
+    else{
+        button.style.backgroundColor=transparent;
     }
-    else boldButton.style.backgroundColor = 'transparent';
 }
 
-boldButton.addEventListener('click', () => {
-    if (currentCell.style.fontWeight === 'bold') {
-        currentCell.style.fontWeight = 'normal';
+function buttonClickHandler(currentCell, button, style, toggleStyle, styleProperty) {
+    if (currentCell.style[styleProperty] === style) {
+        currentCell.style[styleProperty] = toggleStyle;
+        button.style.backgroundColor = transparent;
     }
     else {
-        currentCell.style.fontWeight = 'bold';
-        boldButton.style.backgroundColor = 'yellow';
+        currentCell.style[styleProperty] = style;
+        button.style.backgroundColor = transparentBlue;
     }
-    // latest style should be passed to updated matrix
-    updateMatrix(currentCell);
-    // currentCell.style.fontWeight = currentCell.style.fontWeight==='bold'? 'normal':'bold';
-})
-
-italicsButton.addEventListener('click', () => {
-    if (currentCell.style.fontStyle === 'italic') {
-        currentCell.style.fontStyle = 'normal';
-    }
-    else currentCell.style.fontStyle = 'italic';
-
-    updateMatrix(currentCell);
-})
-
-underlineButton.addEventListener('click', () => {
-    if (currentCell.style.textDecoration === 'underline') {
-        currentCell.style.textDecoration = 'none';
-    }
-    else currentCell.style.textDecoration = 'underline';
-
-    updateMatrix(currentCell);
-})
-
-leftAlign.addEventListener('click', () => {
-    currentCell.style.textAlign = 'left';
-    updateMatrix(currentCell);
-})
-
-rightAlign.addEventListener('click', () => {
-    currentCell.style.textAlign = 'right';
-    updateMatrix(currentCell);
-})
-
-centerAlign.addEventListener('click', () => {
-    currentCell.style.textAlign = 'center'; /// changing style of a particular cell in 
-    // table
-    updateMatrix(currentCell);
-})
-
-fontSizeDropDown.addEventListener('change', () => {
-    // what ever option tag is chosen by the end user is
-    // mapped with select tag with value attribute
-    currentCell.style.fontSize = fontSizeDropDown.value;
-    updateMatrix(currentCell);
-})
-
-fontStyleDropDown.addEventListener('change', () => {
-    // what ever option tag is chosen by the end user is
-    // mapped with select tag with value attribute
-    currentCell.style.fontFamily = fontStyleDropDown.value;
-    updateMatrix(currentCell);
-})
-
-// see the diff between input and change
-
-textColorInput.addEventListener('input', () => {
-    currentCell.style.color = textColorInput.value;
-    updateMatrix(currentCell);
-})
-
-
-bgColorInput.addEventListener('change', () => {
-    currentCell.style.backgroundColor = bgColorInput.value;
-    updateMatrix(currentCell);
-})
-
-
-cutButton.addEventListener('click', () => {
-    cutCell = {
-        style: currentCell.style.cssText,
-        text: currentCell.innerText,
-    }
-    currentCell.innerText = '';
-    currentCell.style.cssText = '';
-    updateMatrix(currentCell);
-})
-
-copyButton.addEventListener('click', () => {
-    cutCell = {
-        style: currentCell.style.cssText,
-        text: currentCell.innerText,
-    }
-    // I don't need to delete anything here
-    // currentCell.innerText='';
-    // currentCell.style.cssText='';
-})
-
-pasteButton.addEventListener('click', () => {
-    currentCell.innerText = cutCell.text;
-    currentCell.style.cssText = cutCell.style;
-    updateMatrix(currentCell);
-})
-
-function downloadJson() {
-    // 2d matrix into string
-    const matrixString = JSON.stringify(matrix);
-
-    // text form of matrix -> piece of memory (downloadable)
-    // application/json -> format for json
-    const blob = new Blob([matrixString], { type: 'application/json' });
-    // link created -> attach href
-    // click link
-    // delete link
-    const link = document.createElement('a');
-    // 211 -> converting piece of memory to downloadable link
-    link.href = URL.createObjectURL(blob);
-    // download the link instead of opening it
-    // link.download -> file name
-    link.download = 'table.json';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+    updateObjectInMatrix();
 }
-// visible table -> virtual memory
-// virtual memory -> phyical table
 
-// 14 -> 22 (you triggered a change event)
+// buttonClickHandler(currentCell,boldBtn,'bold','normal','fontWeight');
 
-// [ 
-//  [{},{}],
-//  [{},{}],
-//  [{},{}],
-// ]
+function onFocusFunction(cell){
+    currentCell=cell;
+    // 
+    if(prevCellId){
+        // const colHead = document.getElementById(prevCellId[0]);
+        // const rowHead= document.getElementById(prevCellId.substring(1));
+        // colHead.style.backgroundColor=transparent;
+        // rowHead.style.backgroundColor=transparent;
+        setCellColor(prevCellId[0],prevCellId.substring(1),transparent);
+    }
+    // 
+    // if(currentCell.style.fontWeight==='bold'){
+    //     boldBtn.style.backgroundColor=transparentBlue;
+    // }
+    // else{
+    //     boldBtn.style.backgroundColor=transparent;
+    // }
+    buttonHighlter(currentCell,boldBtn,'bold','fontWeight');
+    // 
+    // if(currentCell.style.fontStyle==='italic'){
+    //     italicsBtn.style.backgroundColor=transparentBlue;
+    // }
+    // else{
+    //     italicsBtn.style.backgroundColor=transparent;
+    // }
+    buttonHighlter(currentCell,italicsBtn,'italic','fontStyle');
+    // 
+    // if(currentCell.style.textDecoration==='underline'){
+    //     underlineBtn.style.backgroundColor=transparentBlue;
+    // }
+    // else{
+    //     underlineBtn.style.backgroundColor=transparent;
+    // }
+    // 
+    buttonHighlter(currentCell,underlineBtn,'underline','textDecoration');
+    // 
+    currentCellHeading.innerText=cell.id + ' ' + 'selected';
+    // const colHead = document.getElementById(cellId[0]);
+    // const rowHead=document.getElementById(cellId.substring(1));
+    // colHead.style.backgroundColor=transparentBlue;
+    // rowHead.style.backgroundColor=transparentBlue;
+    setCellColor(cell.id[0],cell.id.substring(1),transparentBlue);
+    // here my cellId becomes prev cell id
+    prevCellId=cell.id;
+}
 
-// A2
+function updateObjectInMatrix(){
+    let id = currentCell.id;
+    let tempObj={
+        id: id,
+        text: currentCell.innerText,
+        style: currentCell.style.cssText,
+    }
+    let col=id[0].charCodeAt(0)-65;
+    let row=id.substr(1)-1;
+    matrix[row][col]=tempObj;
+}
 
-// 1st row, col -> 0th
+// here rowNo is not required
+colGen('th', tHeadRow, true);
+tableBodyGen();
+if(localStorage.getItem(arrMatrix)){
+    matrix=JSON.parse(localStorage.getItem(arrMatrix))[0];
+    renderMatrix();
+}
 
-// A2 -> 1,0
-// let row=id.substring(1); // 2
-// let col=id[0]; // 'A' -> 65
-// twoDArray[1][0]
-
-
-// user clicks on download button.
-// row * col
-// 1st -> you traverse over table -> copy evey cell
-// and then give that 2d matrix to the download
-
-// constant
-// 2nd -> you give the matrix
-// when user is editing 
-
-// constant operation
-// 2d matrix
-
-// both the contest discussion
-// promises extra class
-// call apply & bind
-
-// 7:45 is doubt time
-// kudos to Diptendu
-
-
-// visible table (user visual memory)
-// virtual memory (2d matrix)
-
-
-// cell -> event triggred -> function updateCell(id,content)
-// content -> cell text and style
-// 
-
-// input and change they will work same in this event
-uploadJsonFile.addEventListener('change', uploadJSONFileFn);
-
-
-//   let tempObj = {
-//     style: currentCell.style.cssText,
-//     text: currentCell.innerText,
-//     id: currentCell.id,
+// for (let col = 0; col < columns; col++) {
+//     const th = document.createElement('th');
+//     // col+65 -> ASCII character
+//     th.innerText = String.fromCharCode(col + 65);
+//     tHeadRow.append(th);
 // }
 
-function uploadJSONFileFn(event) {
-    const file = event.target.files[0];
-    if (file) {
-        // this can read external file
-        const reader = new FileReader();
-        reader.readAsText(file);
-        reader.onload = function (e) {
-            const fileContent = e.target.result;
-            try {
-                // updated my matrix
-                matrix = JSON.parse(fileContent);
-                matrix.forEach(row => {
-                    row.forEach(cell => {
-                        if (cell.id) {
-                            let cellToBeEdtited = document.getElementById(cell.id);
-                            cellToBeEdtited.innerText = cell.text;
-                            cellToBeEdtited.style.cssText = cell.style;
-                        }
-                        // else empty object-> do nothing
-                    })
-                })
-            }
-            catch (err) {
-                console.log(err);
-            }
-        }
-        // how you you trigger reader?
-        // .readAsText method will trigger reader
-        // .onload method is having my default function
+function tableBodyGen(){
+    tBody.innerHTML='';
+    for (let row = 1; row <= rows; row++) {
+        const tr = document.createElement('tr');
+        const th = document.createElement('th');
+        th.innerText=row;
+        th.setAttribute('id',row);
+        tr.append(th);
+        // for(let col=0;col<columns;col++){
+        //     const td=document.createElement('td');
+        //     tr.append(td);
+        // }
+        // here row is required
+        colGen('td',tr,false,row);
+        tBody.append(tr);
     }
 }
 
+// boldBtn.addEventListener('click',()=>{
+//     if(currentCell.style.fontWeight==='bold'){
+//         currentCell.style.fontWeight='normal';
+//         boldBtn.style.backgroundColor=transparent;
+//     }
+//     else{
+//         currentCell.style.fontWeight='bold';
+//         boldBtn.style.backgroundColor=transparentBlue;
+//     }
+// })
 
-// uploading a JSON file
-// matrix
-// table
+boldBtn.addEventListener('click', () => buttonClickHandler(currentCell, boldBtn, 'bold', 'normal', 'fontWeight'));
 
-function viewSheet(event) {
-    let id = event.target.id.split('-')[1];
-    var matrixArr = JSON.parse(localStorage.getItem(arrMatrix));
-    matrix = matrixArr[id - 1];
-    // current matrix points towards the latest currentSheet;
-    // clean previousTable
-    tBody.innerHTML = ``;
-    // repeated Code please make function (DIY)
-    for (let row = 1; row <= rows; row++) { // Row -> 1-100
-        // i create a tr
-        let tr = document.createElement('tr');
-        // number cell
-        let th = document.createElement('th');
-        // injecting number in th
-        th.innerText = row;
-        tr.append(th);
-        for (let col = 0; col < columns; col++) { //COL-> 0->26 // A->Z
-            let td = document.createElement('td');
-            td.setAttribute('contenteditable', 'true');
-            // unique row and unique col
-            // ColRow
-            td.setAttribute('id', `${String.fromCharCode(col + 65)}${row}`);
-            // this event will revolve around input
-            td.addEventListener('input', (event) => onInputFn(event));
+italicsBtn.addEventListener('click', () => buttonClickHandler(currentCell, italicsBtn, 'italic', 'normal', 'fontStyle'));
 
-            // this event revolves around focus on a cell
-            td.addEventListener('focus', (event) => onFocusFn(event));
-            tr.append(td);
-        }
-        tBody.append(tr);
+// italicsBtn.addEventListener('click',()=>{
+//     if(currentCell.style.fontStyle==='italic'){
+//         currentCell.style.fontStyle='normal';
+//         italicsBtn.style.backgroundColor=transparent;
+//     }
+//     else{
+//         currentCell.style.fontStyle='italic';
+//         italicsBtn.style.backgroundColor=transparentBlue;
+//     }
+// })
+underlineBtn.addEventListener('click', () => buttonClickHandler(currentCell, underlineBtn, 'underline', 'none', 'textDecoration'));
+
+// underlineBtn.addEventListener('click',()=>{
+//     if(currentCell.style.textDecoration==='underline'){
+//         currentCell.style.textDecoration='none';
+//         underlineBtn.style.backgroundColor=transparent;
+//     }
+//     else{
+//         currentCell.style.textDecoration='underline';
+//         underlineBtn.style.backgroundColor=transparentBlue;
+//     }
+// })
+
+leftBtn.addEventListener('click',()=>{
+    currentCell.style.textAlign='left';
+    updateObjectInMatrix();
+})
+
+rightBtn.addEventListener('click',()=>{
+    currentCell.style.textAlign='right';
+    updateObjectInMatrix();
+})
+
+centerBtn.addEventListener('click',()=>{
+    currentCell.style.textAlign='center';
+    updateObjectInMatrix();
+})
+
+fontFamilyDropdown.addEventListener('change',()=>{
+    currentCell.style.fontFamily=fontFamilyDropdown.value;
+    updateObjectInMatrix();
+})
+
+fontSizeDropdown.addEventListener('change',()=>{
+    currentCell.style.fontSize=fontSizeDropdown.value;
+    updateObjectInMatrix();
+})
+
+// input has better UX and but input is very heavy event Listener
+bgColorSelector.addEventListener('input',()=>{
+    currentCell.style.backgroundColor=bgColorSelector.value;
+    updateObjectInMatrix();
+});
+
+fontColorSelector.addEventListener('change',()=>{
+    currentCell.style.color=fontColorSelector.value;
+    updateObjectInMatrix();
+})
+
+cutBtn.addEventListener('click',()=>{
+    lastPressedBtn='cut';
+    cutCell={
+        text: currentCell.innerText,
+        style: currentCell.style.cssText,
     }
-    matrix.forEach(row => {
-        row.forEach(cell => {
-            if (cell.id) {
-                var myCell = document.getElementById(cell.id);
-                myCell.innerText = cell.text;
-                myCell.style.cssText = cell.style;
+    currentCell.innerText='';
+    currentCell.style.cssText='';
+    updateObjectInMatrix();
+    // style -> it's an object which stores all the properties in an object
+    // cssText -> property of style object which saves my style properties
+    // in text (short form of style)
+})
+
+copyBtn.addEventListener('click',()=>{
+    lastPressedBtn='copy';
+    cutCell={
+        text: currentCell.innerText,
+        style: currentCell.style.cssText,
+    }
+    // style -> it's an object which stores all the properties in an object
+    // cssText -> property of style object which saves my style properties
+    // in text (short form of style)
+})
+
+pasteBtn.addEventListener('click',()=>{
+    currentCell.innerText = cutCell.text;
+    currentCell.style = cutCell.style;
+     // you can pass
+    // cssText to style
+    if(lastPressedBtn==='cut'){
+        cutCell = undefined;
+    }
+    updateObjectInMatrix();
+})
+
+uploadInput.addEventListener('input',uploadMatrix);
+
+function renderMatrix(){
+    matrix.forEach(row=>{
+        row.forEach(cellObj=>{
+            if(cellObj.id){
+                let currentCell=document.getElementById(cellObj.id);
+                // currentCell is my html obj, cellObj is js object
+                currentCell.innerText=cellObj.text;
+                // I can pass cssText to style, internally it's handling
+                currentCell.style=cellObj.style;
             }
         })
     })
-    currSheetNum=id;
-    sheetNo.innerText = "Sheet No - " + currSheetNum;
 }
+
+// matrix -> [{},{},{},{},{}];
+
+function viewSheet(event){
+    prevSheet=currentSheet;
+    currentSheet=event.target.id.split('-')[1];
+    let matrixArr = JSON.parse(localStorage.getItem(arrMatrix));
+    // it should save previous sheet into arrMatrix
+    // matrix -> ✅, prevsheet -> ❌
+    // updatingMatrix with latest matrix in matrixArr
+    // matrixArr=[matrix1,matrix2,matrix3]
+    matrixArr[prevSheet-1]=matrix;
+    localStorage.setItem(arrMatrix,JSON.stringify(matrixArr));
+    // it's very to update my virtual memory
+    matrix=matrixArr[currentSheet-1];
+    tableBodyGen();
+    renderMatrix();
+    sheetNo.innerText=`Sheet No - ${currentSheet}`;
+}
+
+function genNextButtonFn(firstRender){
+    // add sheet button
+    const btn = document.createElement('button');
+    numSheets++;
+    if(!firstRender){
+        prevSheet=currentSheet;
+        currentSheet=numSheets;
+    }
+    btn.innerText=`Sheet ${numSheets}`;
+    btn.setAttribute('id',`sheet-${numSheets}`);
+    btn.setAttribute('onclick','viewSheet(event)');
+    buttonContainer.append(btn);
+}
+
+function saveMatrix(){
+    if(localStorage.getItem(arrMatrix)){
+        let tempMatrixArr = JSON.parse(localStorage.getItem(arrMatrix));
+        tempMatrixArr.push(matrix);
+        localStorage.setItem(arrMatrix,JSON.stringify(tempMatrixArr));
+    }
+    else{
+        let tempMatrixArr = [matrix];
+        localStorage.setItem(arrMatrix,JSON.stringify(tempMatrixArr));
+    }
+}
+
+addSheetButton.addEventListener('click',()=>{
+    genNextButtonFn(false);
+    sheetNo.innerText=`Sheet No - ${currentSheet}`;
+    // arrMatrix -> array of matrix
+    saveMatrix();
+    createNewMatrix();
+    tableBodyGen();
+});
+
+function dowloadMatrix(){
+    const matrixString = JSON.stringify(matrix);
+    // memory out of my matrixString
+    const blob = new Blob([matrixString], { type: 'application/json' });
+
+    // i have my memory which is formed out of matrixString;
+    const link = document.createElement('a');
+    // convert my blob to link href (URL)
+    link.href = URL.createObjectURL(blob);
+    link.download='table.json';
+    // matrix->stringify->blob->URL
+    link.click();
+}
+
+function uploadMatrix(event) {
+    const file = event.target.files[0];
+    if(file){
+        const reader = new FileReader();
+        reader.readAsText(file); // this is the trigger
+        // this reader should convert my blob into js code
+        reader.onload = function(event){
+            const fileContent = JSON.parse(event.target.result);
+            matrix=fileContent;
+            renderMatrix();
+        }
+        // reader is inbuild instance of my FileReaderClass
+    }
+}
+
+// render uploaded file
+// add sheet
+// sketch board
+
+// download and upload of sheets
+// and addition of sheets
+
+// 1st approach
+
+// let twoDMatrix=[
+//     [{},{},{}],
+//     [{},{},{}],
+//     [{},{},{}],
+//     [{},{},{}],
+// ];
+
+// row * col
+// 100 * 26
+
+// 1st approach nested loops to store each and every cell
+// A1 -> A & 1
+
+// colRow -> excel address of cell
+
+// twoDMatrix[col][row] -> ❌
+// twoDMatrix[row][col] -> ✅
+// 
+// 0,0 -> row,col
+// 1, A
+// -1, asciiNumber(A) -65;
+
+// currentCell gets changed -> respective object in matrix
+// updateCell();
+
+// add sheet button notes
+// save my matrix data somewhere -> localstorage
+// array of matrix
+// cleanup matrix
+// cleanup table
+// update current sheet no -> ✅
+// update total number of sheets -> ✅
+// create button for the new sheet -> ✅
+
+// complete upload fn
+
+// matrix 1 -> should be saved
+// matrix 2 -> should be saved
+// matrxArr=[matrix1,matrix2]
+
+
+// things left rendering matrix data (used at 2 places)
+// save matrix function
